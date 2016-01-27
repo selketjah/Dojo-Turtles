@@ -109,8 +109,23 @@ System.IO.File.WriteAllText(path,squareAsSvg)
 // TODO
 // create a triangle... or whatever you want!
 
+let pointsForTriangle =
+  [
+    (40.0, 40.0, 20.0, 100.0)
+    (40.0, 40.0, 60.0, 100.0)
+    (20.0, 100.0, 60.0, 100.0)
+  ]
 
+let triangleAsSvg =
+    pointsForTriangle
+    // make a line for each point
+    |> List.map svgLine
+    // contatenate into one string
+    |> String.concat "\n"
+    // inject into the template
+    |> inTemplate
 
+System.IO.File.WriteAllText(path,triangleAsSvg)
 
 (*
 Defining our language
