@@ -141,6 +141,7 @@ instructions.
 type INSTRUCTION =
     | FORWARD of float // move fwd by x pixels
     | TURNLEFT of float // turn left by x degrees
+    | TURNRIGHT of float // turn right by x degrees
     | REPEAT of int * INSTRUCTION list // repeat n times instructions
 
 // we can now write a simple program, 
@@ -188,9 +189,13 @@ let moveForward (state:State) length =
         X = state.X + length * cos (state.Angle |> toRadians)
         Y = state.Y + length * sin (state.Angle |> toRadians) }
 
-let turn (state:State) angle =
+let turnLeft (state:State) angle =
     { state with 
         Angle = (state.Angle + angle) % 360.0 }
+
+let turnRight (state:State) angle =
+    { state with 
+        Angle = (state.Angle - angle) % 360.0 }
 
 // we can now recursively process a program:
 // we maintain a list of the states we generated so far,
@@ -213,8 +218,11 @@ let rec execute (states:State list) (program:INSTRUCTION list) =
                 let nextState = moveForward currentState length
                 execute (nextState :: states) tail
             | TURNLEFT(angle) ->
-                let nextState = turn currentState angle
+                let nextState = turnLeft currentState angle
                 execute (nextState :: states) tail
+            | TURNRIGHT(angle) ->
+                let nextState = turnRight currentState angle
+                execute(nextState:: states) tail
             | REPEAT(repeat,sub) ->
                 let rec runSub iter result =
                     match (iter < repeat) with
@@ -279,7 +287,7 @@ createSvg currentStateProgram complexProgram
 let starState = { X = 150.0; Y = 100.0; Angle = 45.0 }
 let starProgram  = 
   [ 
-    REPEAT(6, [FORWARD 50.0; TURNLEFT (120.0); FORWARD 50.0; TURNLEFT (300.0)])
+    REPEAT (6, [FORWARD 50.0; TURNLEFT (120.0); FORWARD 50.0; TURNRIGHT (60.0)])
   ]
 createSvg starState starProgram
 
