@@ -76,10 +76,10 @@ let inTemplate content =
 </body>
 </html>""" content
 
-let svgLine (x1,y1,x2,y2) =
+let svgLine (x1,y1,x2,y2, strokeWidth) =
     sprintf
-        """<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="black" />"""
-        x1 y1 x2 y2
+        """<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="black" stroke-width="%i" />"""
+        x1 y1 x2 y2 strokeWidth
 
 
 // TODO
@@ -88,10 +88,10 @@ let svgLine (x1,y1,x2,y2) =
 
 let pointsForSquare = 
     [ 
-        (20.0, 20.0, 20.0, 100.0)
-        (20.0, 100.0, 100.0, 100.0)
-        (100.0, 100.0, 100.0, 20.0)
-        (100.0, 20.0, 20.0, 20.0)
+        (20.0, 20.0, 20.0, 100.0, 1)
+        (20.0, 100.0, 100.0, 100.0, 3)
+        (100.0, 100.0, 100.0, 20.0, 1)
+        (100.0, 20.0, 20.0, 20.0, 3)
     ]
 
 let squareAsSvg =
@@ -111,9 +111,9 @@ System.IO.File.WriteAllText(path,squareAsSvg)
 
 let pointsForTriangle =
   [
-    (40.0, 40.0, 20.0, 100.0)
-    (40.0, 40.0, 60.0, 100.0)
-    (20.0, 100.0, 60.0, 100.0)
+    (40.0, 40.0, 20.0, 100.0, 1)
+    (40.0, 40.0, 60.0, 100.0, 1)
+    (20.0, 100.0, 60.0, 100.0, 1)
   ]
 
 let triangleAsSvg =
@@ -142,6 +142,7 @@ type INSTRUCTION =
     | FORWARD of float // move fwd by x pixels
     | TURNLEFT of float // turn left by x degrees
     | TURNRIGHT of float // turn right by x degrees
+    | SETPENSIZE of int // sets the pen size
     | REPEAT of int * INSTRUCTION list // repeat n times instructions
 
 // we can now write a simple program, 
@@ -179,7 +180,7 @@ a program (a list of instructions) to it.
 // the current state of the turtle: 
 // position = where the turtle is on screen
 // angle = what direction the turtle is pointed to
-type State = { X:float; Y:float; Angle:float }
+type State = { X:float; Y:float; Angle:float; PenSize:int }
 
 let PI = System.Math.PI
 let toRadians angle = angle * 2.0 * PI / 360.0
@@ -196,6 +197,10 @@ let turnLeft (state:State) angle =
 let turnRight (state:State) angle =
     { state with 
         Angle = (state.Angle - angle) % 360.0 }
+
+let setPenSize (state:State) penSize =
+  { state with
+      PenSize = penSize }
 
 // we can now recursively process a program:
 // we maintain a list of the states we generated so far,
@@ -223,6 +228,9 @@ let rec execute (states:State list) (program:INSTRUCTION list) =
             | TURNRIGHT(angle) ->
                 let nextState = turnRight currentState angle
                 execute(nextState:: states) tail
+            | SETPENSIZE(size) ->
+                let nextState = setPenSize currentState size
+                execute(nextState:: states) tail
             | REPEAT(repeat,sub) ->
                 let rec runSub iter result =
                     match (iter < repeat) with
@@ -242,7 +250,7 @@ let run (startState:State) (program:INSTRUCTION list) =
 // This should produce a list of the states the Turtle
 // goes through, as the program executes
 
-let initialState = { X = 250.0; Y = 250.0; Angle = 0.0 }
+let initialState = { X = 250.0; Y = 250.0; Angle = 0.0; PenSize = 1 }
 let simpleProgramOutput = run initialState simpleProgram
 
 
@@ -260,7 +268,7 @@ let linesBetweenStates (output:State list) =
     output
     |> Seq.pairwise
     |> Seq.map (fun (state1,state2) ->
-        state1.X, state1.Y, state2.X, state2.Y)
+        state1.X, state1.Y, state2.X, state2.Y, state1.PenSize)
 
 let save (content:string) = 
     System.IO.File.WriteAllText(path,content)
@@ -277,16 +285,17 @@ let createSvg (startState:State) (program:INSTRUCTION list) =
 // TODO 
 // createSvg from one of the sample programs,
 // and open the turtle.html file in your browser
-let currentStateProgram = { X = 250.0; Y = 250.0; Angle = 90.0 } 
+let currentStateProgram = { X = 250.0; Y = 250.0; Angle = 90.0; PenSize = 1 } 
 createSvg currentStateProgram simpleProgram
 
 createSvg currentStateProgram complexProgram
 
 // TODO
 // create a program to draw and save a star?
-let starState = { X = 150.0; Y = 100.0; Angle = 45.0 }
+let starState = { X = 150.0; Y = 100.0; Angle = 45.0; PenSize = 1 }
 let starProgram  = 
   [ 
+    SETPENSIZE 3
     REPEAT (6, [FORWARD 50.0; TURNLEFT (120.0); FORWARD 50.0; TURNRIGHT (60.0)])
   ]
 createSvg starState starProgram
