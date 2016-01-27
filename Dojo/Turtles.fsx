@@ -276,7 +276,7 @@ createSvg currentStateProgram complexProgram
 
 // TODO
 // create a program to draw and save a star?
-let starState = { X = 250.0; Y = 250.0; Angle = 45.0 }
+let starState = { X = 150.0; Y = 100.0; Angle = 45.0 }
 let starProgram  = 
   [ 
     REPEAT(6, [FORWARD 50.0; TURNLEFT (120.0); FORWARD 50.0; TURNLEFT (300.0)])
