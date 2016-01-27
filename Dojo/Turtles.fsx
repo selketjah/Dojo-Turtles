@@ -269,13 +269,14 @@ let createSvg (startState:State) (program:INSTRUCTION list) =
 // TODO 
 // createSvg from one of the sample programs,
 // and open the turtle.html file in your browser
+let currentStateProgram = { X = 250.0; Y = 250.0; Angle = 90.0 } 
+createSvg currentStateProgram simpleProgram
 
-
-
+createSvg currentStateProgram complexProgram
 
 // TODO
 // create a program to draw and save a star?
-
+let starState = { X = 250.0; Y = 250.0; Angle = 45.0 }
 
 
 
