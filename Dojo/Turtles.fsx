@@ -125,23 +125,23 @@ instructions.
 // (go) forward, (turn) left, repeat
 type INSTRUCTION =
     | FORWARD of float // move fwd by x pixels
-    | LEFT of float // turn left by x degrees
+    | TURNLEFT of float // turn left by x degrees
     | REPEAT of int * INSTRUCTION list // repeat n times instructions
 
 // we can now write a simple program, 
 // as a list of INSTRUCTIONs
-let simpleProgram = [ FORWARD 50.0; LEFT (90.0); FORWARD 50.0 ]
+let simpleProgram = [ FORWARD 50.0; TURNLEFT (90.0); FORWARD 50.0 ]
 
 // or a more complex one, with a 'nested program':
 let complexProgram =
     [
         FORWARD 100.0
-        LEFT (90.0)
+        TURNLEFT (90.0)
         REPEAT (5, 
             // this is a "nested program"
             [ 
                 FORWARD 50.0
-                LEFT (90.0) 
+                TURNLEFT (90.0) 
             ])
     ]
 
@@ -197,7 +197,7 @@ let rec execute (states:State list) (program:INSTRUCTION list) =
             | FORWARD(length) ->
                 let nextState = moveForward currentState length
                 execute (nextState :: states) tail
-            | LEFT(angle) ->
+            | TURNLEFT(angle) ->
                 let nextState = turn currentState angle
                 execute (nextState :: states) tail
             | REPEAT(repeat,sub) ->
